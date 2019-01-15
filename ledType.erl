@@ -30,7 +30,7 @@ loop() ->
     {switchOff, State, ReplyFn} ->
        #{outputInst := Output, rw_cmd := ExecFn} = State,
        NewLedVal = ExecFn({write, Output, 0}),
-      ReplyFn(State#{on_or_off := on, ledValue := NewLedVal}),
+      ReplyFn(State#{on_or_off := off, ledValue := NewLedVal}),
       loop();
     {switchOn, State, ReplyFn} ->
       #{outputInst := Output, rw_cmd := ExecFn} = State,

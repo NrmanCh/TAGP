@@ -28,7 +28,7 @@ init(Host, ButtonTyp_Pid, WireInst_Pid, BCM, RealWorldCmdFn) ->
 
 read_button(ButtonInst_Pid) ->
   ButtonInst_Pid ! readValue.
-  
+
 switch_off(ButtonInst_Pid) ->
   ButtonInst_Pid ! switchOff.
 
@@ -45,11 +45,11 @@ flow_influence(ButtonInst_Pid) ->
 loop(Host, State, ButtonTyp_Pid, WireInst_Pid) ->
   %read_button(self()),
   receive
-  {subscribe, ListIds, ReplyFn} ->
+    {subscribe, ListIds, ReplyFn} ->
       #{subs := ListId} = State,
-	  ListSubscribers = lists:append(ListIds, ListId),
-	  NewState = maps:put(subs, ListSubscribers, State),
-	  survivor:entry({ buttonInst_subsPids, NewState }),
+      ListSubscribers = lists:append(ListIds, ListId),
+      NewState = maps:put(subs, ListSubscribers, State),
+      survivor:entry({ buttonInst_subsPids, NewState }),
       ReplyFn(NewState),
       loop(Host, NewState, ButtonTyp_Pid, WireInst_Pid);
     readValue ->
@@ -57,25 +57,32 @@ loop(Host, State, ButtonTyp_Pid, WireInst_Pid) ->
       #{butValue := OldValue} = State, #{butValue := NewValue} = NewState,
       check(OldValue, NewValue, NewState),
       erlang:send_after(1500, self(), readValue),
-      %survivor:entry({ buttonInst_updated, NewState }),
       loop(Host, NewState, ButtonTyp_Pid, WireInst_Pid);
     switchOn ->
-      #{subs := SubsList, count := N} = State,
-      case N of
-        _ when N < 8 ->  
-          N1 = N +1,
-          io:format("N1 ~p~n", [N1]),
-          set_counter_resources(SubsList, N1),
-          NewState = maps:update(count, N1, State),
-          loop(Host, NewState, ButtonTyp_Pid, WireInst_Pid);
-        Otherwise -> 
-          N1 = 0,
-          io:format("Butvalue ~p~n", [Otherwise]),
-          NewState = maps:update(count, N1, State),
-          loop(Host, NewState, ButtonTyp_Pid, WireInst_Pid)
+      #{bcmPin := Pin, subs := SubsList, count := N} = State,
+      case Pin of
+        22 ->
+          case N of
+            _ when N < 8 ->
+              N1 = N +1,
+              io:format("N1 ~p~n", [N1]),
+              %io:format("N1 ~p~n", [SubsList]),
+              set_counter_resources(SubsList, N1),
+              %msg:set_ack(Res_Inst, switchOn),
+              NewState = maps:update(count, N1, State),
+              loop(Host, NewState, ButtonTyp_Pid, WireInst_Pid);
+            Otherwise ->
+              N1 = 0,
+              io:format("Butvalue ~p~n", [Otherwise]),
+              NewState = maps:update(count, N1, State),
+              loop(Host, NewState, ButtonTyp_Pid, WireInst_Pid)
+          end;
+        21 ->
+          loop(Host, State, ButtonTyp_Pid, WireInst_Pid)
       end;
+
       %{ok, NewState} = msg:set_ack(Res_Inst, switchOn),
-      %survivor:entry({ buttonInst_updated, NewState }),
+  %survivor:entry({ buttonInst_updated, NewState }),
     switchOff ->
       {ok, NewState} = msg:set_ack(ButtonTyp_Pid, switchOff, State),
       survivor:entry({ buttonInst_updated, NewState }),
@@ -98,19 +105,19 @@ loop(Host, State, ButtonTyp_Pid, WireInst_Pid) ->
 
 check(OldValue ,NewValue, NewState) when OldValue /= NewValue ->
   case NewValue of
-  1 ->
-    io:format("Butvalue ~p~n", [NewValue]),
-    switch_on(self()),
-    survivor:entry({ buttonInst_updated, NewState }),
-    timer:sleep(1000);
-  Otherwise ->
-    io:format("Butvalue ~p~n", [Otherwise]),
-    survivor:entry({ buttonInst_updated, NewState })
+    1 ->
+      io:format("Butvalue ~p~n", [NewValue]),
+      survivor:entry({ buttonInst_updated, NewState }),
+      switch_on(self()),
+      timer:sleep(1000);
+    Otherwise ->
+      survivor:entry({ buttonInst_updated, NewState }),
+      io:format("Butvalue ~p~n", [Otherwise])
   end;
 check(OldValue ,NewValue, NewState) when OldValue == NewValue ->
   ok.
-  
- 
+
+
 set_counter_resources(X, N1) ->
   [LedThrees, LedTwos, LedOnes] = X,
   <<Threes:1, Twos:1, Ones:1>> = <<N1:3>>,
@@ -119,8 +126,9 @@ set_counter_resources(X, N1) ->
   msg:set_ack(LedOnes, counter, Ones),
   io:format(", , , ~p ~p ~p ~n", [Threes, Twos, Ones]).
 
- 
-  
+
+
+
 
 
 

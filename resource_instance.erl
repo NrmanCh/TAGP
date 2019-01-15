@@ -12,7 +12,7 @@
 %% API
 -export([create/2]).
 -export([list_connectors/1, list_locations/1]).
--export([get_type/1, get_ops/1]).
+-export([get_type/1, get_ops/1, get_state/1, get_flow_influence/1]).
 -export([ form_list/0, get_state/1, set_condition/1, connect/1, connect/3, subscribe/2, disconnect/2]).
 %%% More to follow later.
 
@@ -40,6 +40,9 @@ get_state(ResInst_Pid) -> % current state understood by type (only)
 set_condition(ResInst_Pid) -> % list of commands available in the current state
   io:format("1~n"),
   msg:get(ResInst_Pid, set_condition).
+  
+get_flow_influence(ResInst_Pid) -> 
+	msg:get(ResInst_Pid, get_flow_influence).
   
 subscribe(ResourceInst_Pid, ResourceInst_pid_Sub) ->
   msg:set_ack(ResourceInst_Pid, subscribe, ResourceInst_pid_Sub).

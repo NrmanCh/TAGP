@@ -55,13 +55,19 @@ run() ->
   resource_instance:subscribe(ButtonInst_1, [LedInst_2]),
   resource_instance:subscribe(ButtonInst_1, [LedInst_3]),
   
-  %% here, C_list = the first connector in the circuit
-  {ok, C_list} = resource_instance:list_connectors(WireInst_1),
-  [C|_C_list] = C_list,
-  {ok, ConnectivityType} = resource_type:create(connectivityType, []),
-  {ok, ConnectivityInst} = resource_instance:create(connectivityInst, [C, ConnectivityType]),
-  Res = connectivityInst:get_resource_circuit(ConnectivityInst),
-  Res.
+  %% here, C_list = the first connectors in the circuit
+  {ok, [C | _C_list]} = resource_instance:list_connectors(WireInst_1),
+  %[C|_C_list] = C_list,
+  {ok, CurrentFlowType} = resource_type:create(currentFlowType, []),
+  {ok, CurrentFlowInst} = resource_instance:create(currentFlowInst, [C, CurrentFlowType]),
+  
+  {ok, CurrentMtrType} = resource_type:create(currentMeterType, []),
+  {ok, CurrentMtrInst} = resource_instance:create(currentMeterInst, [self(), CurrentMtrType, WireInst_1, fun(X)-> X*1 end]),
+  
+  Estimate_current = currentMeterInst:estimate_flow(CurrentMtrInst),
+  Estimate_current.
+  
+  %EstFlow = currentMeterInst:estimate_flow(CurrentMtrInst).
   
   %io:format("C:~p~n", [C]).
   
@@ -75,4 +81,4 @@ relais([WireInst_1, WireInst_2, WireInst_3, WireInst_4, WireInst_5]) ->
     %?BCM20, fun(X)-> ledType:gpio(X) end]),
    
     
-
+%{ok, Res} = currentFlowInst:get_resource_circuit(CurrentFlowInst),

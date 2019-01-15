@@ -29,7 +29,7 @@ get_Type(Location_Pid) ->
   msg:get(Location_Pid, get_Type).
 
 arrival(Location_Pid, Visitor_Pid) ->
-  Location_Pid ! {arrived, Visitor_Pid}.
+    Location_Pid ! {arrived, Visitor_Pid}.
 
 departure(Location_Pid) ->
   Location_Pid ! departed.
