@@ -22,7 +22,6 @@ init() ->
 loop() ->
   receive
     {initial_state, [ResInst_Pid, TypeOptions], ReplyFn} ->
-      %io:format("im here in recieve intial state~n"),
       Location = location:create(ResInst_Pid, emptySpace),
       In = connector:create(ResInst_Pid, simpleWire),
       Out = connector:create(ResInst_Pid, simpleWire),

@@ -43,7 +43,6 @@ loop() ->
       loop();
     {flow_influence, State, ReplyFn} ->
       #{on_or_off := OnOrOff} = State,
-      io:format("OnOrOff ~p~n", [OnOrOff]),
       FlowInfluenceFn = fun(Flow) -> flow(Flow, OnOrOff) end, % placeholder only.
       ReplyFn(FlowInfluenceFn),
       loop()
@@ -56,10 +55,7 @@ flow(_Flow, off) -> 0.
 gpio({init, BCM}) ->
   {ok, L0} = gpio:start_init(BCM, out),
   timer:sleep(200),
-  %{ok, B1} = gpio:start_init(22, in),
   L0;
 gpio({write, Output, Value}) ->
   LedValue = gpio:write(Output, Value),
-  %timer:sleep(1000),
-  %gpio:write(Output, 0),
   LedValue.

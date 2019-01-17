@@ -23,7 +23,6 @@ get(Pid, Key) ->
   end.
 
 get(Pid, Key, P_list) ->
-  io:format("im here in msg~n"),
   Pid ! {Key, P_list, replier(R = make_ref())},
   receive
     {R, Info} -> {ok, Info}

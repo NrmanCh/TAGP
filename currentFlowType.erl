@@ -67,7 +67,7 @@ discover_circuit([ disconnected | Todo_List], Circuit, ResInst_Pid) ->
 discover_circuit([C | Todo_List], Circuit, ResInst_Pid) ->
   %io:format("C ~p , Todo_list ~p , Circuit ~p ~n", [C, Todo_List, Circuit]),
   {ok, Updated_Todo_list, Updated_Circuit} =
-    %% process_connection returns an Updated_Todo_list and Updated_Circuit
+  %% process_connection returns an Updated_Todo_list and Updated_Circuit
   process_connection(C, maps:find(C, Circuit ), Todo_List, Circuit, ResInst_Pid),
   %io:format("Updated_Todo_list: ~p , Updated_Circuit: ~p ~n", [Updated_Todo_list, Updated_Circuit]),
   discover_circuit(Updated_Todo_list, Updated_Circuit, ResInst_Pid);

@@ -36,7 +36,6 @@ loop() ->
     {estimate_flow, State, ReplyFn} ->
       #{current := F} = State,
       {ok, C} = currentFlowInst:get_resource_circuit(F),
-      %io:format("C:~p~n", [C]),
       ReplyFn(computeFlow(C)),
       loop();
     {isOn, State, ReplyFn} ->

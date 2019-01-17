@@ -26,14 +26,12 @@ loop() ->
       Output = RealWorldCmdFn({init, BCM}),
       ReplyFn(#{resInst => ResInst_Pid, wireInst => WireInst_Pid, bcmPin => BCM,
         subs => [], rw_cmd => RealWorldCmdFn, on_or_off => off, outputInst => Output, 
-        butValue => 0, count => 0}),
+        btnValue => 0, count => 0}),
       loop();
     {readValue, State, ReplyFn} ->
       #{outputInst := Output, rw_cmd := ExecFn} = State,
-      %#{rw_cmd := ExecFn} = State,
       NewValue = list_to_integer(ExecFn({readButton, Output})),
-      %io:format("Butvalue ~p~n", [NewValue]),
-      ReplyFn(State#{butValue := NewValue}),
+      ReplyFn(State#{btnValue := NewValue}),
       loop();
     {switchOff, State, ReplyFn} ->
       #{rw_cmd := ExecFn} = State, ExecFn(off),
@@ -64,5 +62,5 @@ gpio({init, BCM}) ->
   {ok, B1} = gpio:start_init(BCM, in),
   B1;
 gpio({readButton, Output}) ->
-  Butvalue = gpio:read(Output),
-  Butvalue.
+  Btnvalue = gpio:read(Output),
+  Btnvalue.

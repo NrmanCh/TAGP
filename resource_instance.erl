@@ -12,8 +12,8 @@
 %% API
 -export([create/2]).
 -export([list_connectors/1, list_locations/1]).
--export([get_type/1, get_ops/1, get_state/1, get_flow_influence/1]).
--export([ form_list/0, get_state/1, set_condition/1, connect/1, connect/3, subscribe/2, disconnect/2]).
+-export([get_type/1, get_ops/1, get_state/1, set_state/2, get_flow_influence/1]).
+-export([ form_list/0, set_condition/1, connect/1, connect/3, subscribe/2, disconnect/1]).
 %%% More to follow later.
 
 create(Selector, Environment) ->
@@ -36,9 +36,12 @@ get_ops(ResInst_Pid) -> % list of commands available in the current state
 get_state(ResInst_Pid) -> % current state understood by type (only)
   % Does not lock the resource state; may change at any time
   msg:get(ResInst_Pid, get_state).
+  
+set_state(ResInst_Pid, NewState) -> % current state understood by type (only)
+  % Does not lock the resource state; may change at any time
+  msg:set_ack(ResInst_Pid, set_state, NewState).
 
 set_condition(ResInst_Pid) -> % list of commands available in the current state
-  io:format("1~n"),
   msg:get(ResInst_Pid, set_condition).
   
 get_flow_influence(ResInst_Pid) -> 
@@ -47,10 +50,8 @@ get_flow_influence(ResInst_Pid) ->
 subscribe(ResourceInst_Pid, ResourceInst_pid_Sub) ->
   msg:set_ack(ResourceInst_Pid, subscribe, ResourceInst_pid_Sub).
 
-%%ResInst_Pid_list = alle ResInst van een pipeType, en de laatste pid moet terug de eerste ResInst zijn.
-%%om gesloten kring te maken.
+%%	ResInst_Pid_list = all the pids of the wireInst's.
 connect(ResInst_Pid_list) ->
-  io:format(":: ~p~n", [ResInst_Pid_list]),
   connect(hd(ResInst_Pid_list), tl(ResInst_Pid_list), hd(ResInst_Pid_list)).
 
 connect(T, [], FirstValue)->
@@ -69,15 +70,18 @@ connect(A,[B|BS], FirstItem)->
   connect(B,BS, FirstItem).
 
 %%Disconnect all 
+disconnect(L) ->
+  disconnect(L, []).
 disconnect([A|B], Acc) ->
   {ok,ConList_A} = list_connectors(A),  %fetch this wire insts connect pid
-  ResInst_Pid_list = lists:append(ConList_A),
-  disconnect([B], ResInst_Pid_list);
+  ResInst_Pid_list = lists:append(ConList_A, Acc),
+  disconnect(B, ResInst_Pid_list);
 disconnect([], ResInst_Pid_list) ->
-  [X || X <- ResInst_Pid_list,  connector:disconnect(X)].
+   io:format("disconnecting: ~p~n",[ResInst_Pid_list]),
+  [connector:disconnect(X) || X <- ResInst_Pid_list ].
 
 
-%%Om een lijst te maken van de ets-tabel
+%%	to create a list of the ets-table
 form_list()->
   form_list(ets:first(logboek),[]).
 form_list(Key,List)->
