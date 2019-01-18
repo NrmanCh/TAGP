@@ -55,7 +55,7 @@ run() ->
   register(button_2, ButtonInst_2),
   
   
-  resource_instance:connect([WireInst_1, WireInst_2, WireInst_3, WireInst_4, WireInst_5, WireInst_6]),
+  resource_instance:connect([WireInst_4, WireInst_1, WireInst_2, WireInst_3, WireInst_6, WireInst_5 ]),
   timer:sleep(100),
   {ok, [C2 | _C_list]} = resource_instance:list_connectors(WireInst_1),
   Conn = connector:get_connected(C2),
